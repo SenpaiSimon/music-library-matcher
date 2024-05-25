@@ -61,6 +61,14 @@ async def _exec_shazam(path):
     return data
 
 
+def _sanitizeName(inString):    
+    for entry in replaceList:
+        inString = inString.replace(entry[0], entry[1])
+    
+    inString.rstrip('.')
+    return inString
+
+
 def _call_shazam(path):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -218,6 +226,7 @@ def _addMetadata(data, path):
     os.mkdir(tempPath)
     coverFile = os.path.join(tempPath, "cover.jpg")
     if(data['coverArtUrl'] != Status.MISSING):
+        # delete old cover art is something is already there for some reason
         if(os.path.isfile(coverFile)):
             os.remove(coverFile)
         urllib.request.urlretrieve(data['coverArtUrl'], coverFile)
@@ -255,7 +264,7 @@ def _addMetadata(data, path):
                             )            
         audio.save()
     
-    shutil.rmtree("./temp")
+    shutil.rmtree(tempPath)
     print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
     
     # rename the file accordingly
@@ -263,10 +272,10 @@ def _addMetadata(data, path):
     # move and rename the file accordingly if data is present
     if(data['title'] != Status.MISSING and data['artist'] != Status.MISSING and data['album'] != Status.MISSING and data['trackNumber'] != Status.MISSING):
         # sanitize output shit
-        tempArtist = data['artist'].replace("/", "_").rstrip('.').replace(":", "-")
-        tempAlbum = data['album'].replace("/", "_").rstrip('.').replace(":", "-")
-        tempTitle = data['title'].replace("/", "_").rstrip('.').replace(":", "-")
-        tempArtist = data['artist'].replace("/", "_").rstrip('.').replace(":", "-")
+        tempArtist = _sanitizeName(data['artist'])
+        tempAlbum  = _sanitizeName(data['album'])
+        tempTitle  = _sanitizeName(data['title'])
+        tempArtist = _sanitizeName(data['artist'])
         
         # gen the output path dir
         outPath = os.path.join(outputPath, tempArtist, tempAlbum)
@@ -282,7 +291,7 @@ def _addMetadata(data, path):
     else:
         print(" - {}Skipped{}, since needed fields are missing".format(Fore.YELLOW, Style.RESET_ALL))
         skippedFiles.append(path)
-        skippedPath = os.path.join(outputPath, "skipped")
+        skippedPath = os.path.join(skippedFilesDir)
         os.makedirs(skippedPath, exist_ok=True)
         shutil.move(path, skippedPath)
 
@@ -296,11 +305,20 @@ def printDataFormatted(data):
         
 def fillMetadata(path):
     data = _scrapeSong(path)
+    
     if(data == Status.ERR):
         skippedFiles.append(path)
-        skippedPath = os.path.join(outputPath, "skipped")
+        skippedPath = os.path.join(skippedFilesDir)
         os.makedirs(skippedPath, exist_ok=True)
-        shutil.move(path, skippedPath)
+        
+        try:
+            shutil.move(path, skippedPath)
+        except:
+            # file already exists --> overwrite it please
+            filename = path.name
+            skippedPath = os.path.join(skippedPath, filename)
+            shutil.move(path, skippedPath)
+            
         print("== Error Scraping needed data", end='')
         print(" - {}Skipped{}".format(Fore.YELLOW, Style.RESET_ALL))
         return Status.ERR
@@ -365,10 +383,22 @@ def main():
 
 if __name__ == "__main__":
     # paths
+    
+    # temp is used for coverart download
     tempPath = "./temp"
+    
+    # sucesful files get moved here
     outputPath = "./output"
+    
+    # input files are searched here
     inputDir = "./testing"
     
+    # skipped and error files get moved here
+    skippedFilesDir = "./skipped"
+    
+    # replace 1 with 2 ("1", "2")
+    replaceList = [("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "oo"), ("<", ""), (">", ""), ("\\", "\\\\")]
+
     # files types
     acceptedFilesExtensions = [".mp3", ".flac"]
     main()
