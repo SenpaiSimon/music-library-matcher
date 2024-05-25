@@ -1,0 +1,6 @@
+colorama
+asyncio
+shazamio
+musicbrainzngs
+mutagen
+urllib3
