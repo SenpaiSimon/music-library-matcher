@@ -1,11 +1,11 @@
 import colorama
 from colorama import Fore, Back, Style
 
-from src.globals import *
+import src.globalVars as gv
 
 
 def sanitizeName(inString):
-    for entry in replaceList:
+    for entry in gv.replaceList:
         inString = inString.replace(entry[0], entry[1])
     
     inString.rstrip('.')

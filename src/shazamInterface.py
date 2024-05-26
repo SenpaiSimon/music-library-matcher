@@ -5,7 +5,7 @@ import colorama
 from colorama import Fore, Back, Style
 
 from .types import *
-from .globals import *
+import src.globalVars as gv
 
 async def _exec_shazam(path):
     shazam = Shazam()
