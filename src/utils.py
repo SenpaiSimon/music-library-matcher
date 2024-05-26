@@ -1,3 +1,6 @@
+import colorama
+from colorama import Fore, Back, Style
+
 from src.globals import *
 
 
@@ -14,3 +17,7 @@ def printDataFormatted(data):
     print("==\t - Release Year: {}".format(data.get('releaseYear', "NA")))
     print("==\t - Label: {}".format(data.get('label', "NA")))
     print("==\t - Tags: {}".format(data.get('tags', "NA")))
+    
+
+def printColored(text, color, end):
+    print("{}{}{}".format(color, text, Style.RESET_ALL), end=end)

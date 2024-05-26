@@ -11,7 +11,7 @@ from colorama import Fore, Back, Style
 
 from .globals import *
 from .types import *
-from .utils import sanitizeName, printDataFormatted
+from .utils import sanitizeName, printDataFormatted, printColored
 from .shazamInterface import _call_shazam
 
 def _get_metadata(data):
@@ -25,7 +25,9 @@ def _get_metadata(data):
     if(data.get('artist') == Status.MISSING):
         return Status.ERR
     
-    print("==\t- Trying release API", end='')
+    print("\n", end="")
+    
+    print("==\t\t- Trying release API", end="")
     try:
         artistID = mb.search_artists(data.get('artist', {})).get('artist-list', "NA")[0].get('id', Status.MISSING)
     except IndexError:
@@ -43,7 +45,7 @@ def _get_metadata(data):
     if(release == Status.MISSING):
         fallback = True
     elif(release.get('title', "NA") == data.get('title', "NA")):
-        print(" - {}Success{}".format(Fore.GREEN, Style.RESET_ALL))
+        print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         releaseID = release.get('id', Status.MISSING)
         # break instantly on ERR
         if(releaseID == Status.MISSING):
@@ -54,7 +56,7 @@ def _get_metadata(data):
         
     if(fallback == True):
         print(" - {}Failed{}".format(Fore.YELLOW, Style.RESET_ALL))
-        print("==\t- Falling back to recordings API", end='')
+        print("==\t\t- Falling back to recordings API", end='')
 
         recordingSearch = mb.search_recordings(data.get('title'), arid=artistID).get('recording-list', Status.MISSING)
         if(recordingSearch == Status.MISSING):
@@ -69,10 +71,10 @@ def _get_metadata(data):
         if(recording == Status.MISSING):
             return Status.ERR
         
-        print(" - {}Success{}".format(Fore.GREEN, Style.RESET_ALL))
+        print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
 
 
-    print("==\t- Scraping Metadata from API", end='')
+    print("==\t\t- Scraping Metadata from API", end="")
     if not fallback:  
         songExtendedData = mb.get_release_by_id(releaseID, includes=['tags', 'artists', 'recordings', 'release-groups', 'labels', 'discids']).get('release', Status.MISSING)
         
@@ -148,12 +150,17 @@ def _get_metadata(data):
 
 
 def _scrapeSong(path):
+    print("==\t- Calling Shazam API", end="")
     data = _call_shazam(path)
     if(data == Status.ERR):
+        print(" - {}failed{}".format(Fore.RED, Style.RESET_ALL))
         return Status.ERR
-    
+    print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
+
+    print("==\t- Getting Metadata from Musicbrainz", end="")
     data = _get_metadata(data)
     if(data == Status.ERR):
+        print(" - {}failed{}".format(Fore.RED, Style.RESET_ALL))
         return Status.ERR
     
     return data
@@ -161,15 +168,18 @@ def _scrapeSong(path):
 
 def _addMetadata(data, path):
     # first download cover art
+    print("==\t- Processing all Scraped Metadata")
     os.mkdir(tempPath)
     coverFile = os.path.join(tempPath, "cover.jpg")
     if(data['coverArtUrl'] != Status.MISSING):
+        print("==\t\t- Downloading Cover-Art", end="")
         # delete old cover art is something is already there for some reason
         if(os.path.isfile(coverFile)):
             os.remove(coverFile)
         urllib.request.urlretrieve(data['coverArtUrl'], coverFile)
+        print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
     
-    print("== Adding Metadata to File", end='')
+    print("==\t\t- Adding Metadata to File", end='')
     
     # first text metadata
     EasyID3.RegisterTextKey('label', 'TPUB')
@@ -206,7 +216,7 @@ def _addMetadata(data, path):
     print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
     
     # rename the file accordingly
-    print("== Renaming and Moving File", end='')
+    print("==\t\t- Renaming and Moving File", end='')
     # move and rename the file accordingly if data is present
     if(data['title'] != Status.MISSING and data['artist'] != Status.MISSING and data['album'] != Status.MISSING and data['trackNumber'] != Status.MISSING):
         # sanitize output shit
@@ -217,31 +227,36 @@ def _addMetadata(data, path):
         
         # gen the output path dir
         outPath = os.path.join(outputPath, tempArtist, tempAlbum)
-        outPath = outPath.replace("&", "and")
         # and create it
         os.makedirs(outPath, exist_ok=True)
         finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix)
-        finalFileName = finalFileName.replace("&", "and")
         finalPath = os.path.join(outPath, finalFileName)
         # move the file
         shutil.move(path, finalPath)
         print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
+        print("==\t-> {}New Filename{} is: {}".format(Fore.CYAN, Style.RESET_ALL,finalFileName))
     else:
-        print(" - {}Skipped{}, since needed fields are missing".format(Fore.YELLOW, Style.RESET_ALL))
+        print(" - {}Skipped{} - needed fields are missing".format(Fore.YELLOW, Style.RESET_ALL))
+        
         skippedFiles.append(path)
         skippedPath = os.path.join(skippedFilesDir)
+        print("==\t\t- Moving file to {}".format(skippedPath), end="")
         os.makedirs(skippedPath, exist_ok=True)
         shutil.move(path, skippedPath)
-        
+        print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         
 def fillMetadata(path):
     data = _scrapeSong(path)
     
     if(data == Status.ERR):
+        print("==\t- Error Scraping needed data", end='')
+        print(" - {}Skipped{}".format(Fore.YELLOW, Style.RESET_ALL))
+        
         skippedFiles.append(path)
         skippedPath = os.path.join(skippedFilesDir)
         os.makedirs(skippedPath, exist_ok=True)
         
+        print("==\t- Moving file to {}".format(skippedPath), end="")
         try:
             shutil.move(path, skippedPath)
         except:
@@ -250,14 +265,6 @@ def fillMetadata(path):
             skippedPath = os.path.join(skippedPath, filename)
             shutil.move(path, skippedPath)
             
-        print("== Error Scraping needed data", end='')
-        print(" - {}Skipped{}".format(Fore.YELLOW, Style.RESET_ALL))
+        print("- {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         return Status.ERR
-    
-    print("==")
-    print("== {}RESULT{}".format(Fore.GREEN, Style.RESET_ALL))
-    print("==")
-    printDataFormatted(data)
-    print("==")
-    
     _addMetadata(data, path)

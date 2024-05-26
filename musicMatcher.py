@@ -5,6 +5,7 @@ import colorama
 from colorama import Fore, Back, Style
 
 from src.globals import *
+from src.utils import printColored
 from src.mbInterface import fillMetadata
     
     
@@ -30,26 +31,23 @@ def main():
 
     # now actually loop over them
     curFileIndex = 1
+    print("=========================================================================")
     for root, dirs, files in os.walk(inputDir):
         for filename in files:
             curPath = pathlib.Path(os.path.join(root, filename))
             if curPath.suffix in acceptedFilesExtensions:
                 
-                print("=========================================================================")
                 print("==")
                 print("== {} of {} - File: {}".format(Fore.CYAN + str(curFileIndex) + Style.RESET_ALL, Fore.GREEN + str(totalFileCount) + Style.RESET_ALL, curPath.name))
+                print("==")
                 #  scrape all the metadata for current file
                 fillMetadata(curPath)
-                print("==")
-                print("=========================================================================")
-                
-                # add metadata to the audio file and rename it TODO
-                
+                print("==\n==")
+                               
                 curFileIndex += 1
-                print("\n")
+    print("=========================================================================")
     
     if(len(skippedFiles) != 0):
-        print("=========================================================================")
         print("==")
         print("== {}Skipped Files{}".format(Fore.YELLOW, Style.RESET_ALL))
         for entry in skippedFiles:
