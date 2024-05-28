@@ -15,16 +15,16 @@ def init():
     tempPath = "./temp"
 
     # sucesful files get moved here
-    outputPath = "./output"
+    outputPath = "/media/sven/ssd_1tb/2_postShazam"
 
     # input files are searched here
-    inputDir = "./testing"
+    inputDir = "/media/sven/ssd_1tb/0_waiting"
 
     # skipped and error files get moved here
-    skippedFilesDir = "./skipped"
+    skippedFilesDir = "/media/sven/ssd_1tb/99_error"
 
     # replace 1 with 2 ("1", "2")
-    replaceList = [("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "oo"), ("<", ""), (">", ""), ("\\", "\\\\")]
+    replaceList = [(".",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")]
 
     # files types ##################################
     # ".flac", not working at the moment

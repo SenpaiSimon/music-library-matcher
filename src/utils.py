@@ -8,7 +8,6 @@ def sanitizeName(inString):
     for entry in gv.replaceList:
         inString = inString.replace(entry[0], entry[1])
     
-    inString.rstrip('.')
     return inString
 
 
