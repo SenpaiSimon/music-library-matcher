@@ -27,7 +27,8 @@ def init():
     replaceList = [("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "oo"), ("<", ""), (">", ""), ("\\", "\\\\")]
 
     # files types ##################################
-    acceptedFilesExtensions = [".mp3", ".flac", ".wav", ".m4a"]
+    # ".flac", not working at the moment
+    acceptedFilesExtensions = [".mp3", ".wav", ".m4a"]
 
     # verbosity
     verbose = False

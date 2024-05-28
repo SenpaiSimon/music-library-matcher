@@ -263,7 +263,8 @@ def _addMetadata(data, path):
         tempArtist = sanitizeName(data['artist'])
         
         # gen the output path dir
-        outPath = os.path.join(gv.outputPath, tempArtist, tempAlbum)
+        outPathAlbum = "{} - {}".format(tempArtist, tempAlbum)
+        outPath = os.path.join(gv.outputPath, tempArtist, outPathAlbum)
         # and create it
         os.makedirs(outPath, exist_ok=True)
         finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix)
