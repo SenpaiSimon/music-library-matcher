@@ -1,3 +1,5 @@
+import json
+
 def init():
     global tempPath
     global outputPath
@@ -8,6 +10,9 @@ def init():
     global verbose
     global skippedFiles
     global lastStatusPrint
+    
+    with open("config.json", "r") as read_file:
+        config = json.load(read_file)
 
     # paths ########################################
 
@@ -15,25 +20,23 @@ def init():
     tempPath = "./temp"
 
     # sucesful files get moved here
-    outputPath = "/media/sven/ssd_1tb/2_postShazam"
+    outputPath = config['outputPath']
 
     # input files are searched here
-    inputDir = "/media/sven/ssd_1tb/0_waiting"
+    inputDir = config['inputDir']
 
     # skipped and error files get moved here
-    skippedFilesDir = "/media/sven/ssd_1tb/99_error"
+    skippedFilesDir = config['skippedFilesDir']
 
     # replace 1 with 2 ("1", "2")
-    replaceList = [(".",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")]
+    replaceList = config['replaceList']
 
     # files types ##################################
     # ".flac", not working at the moment
-    acceptedFilesExtensions = [".mp3", ".wav", ".m4a"]
+    acceptedFilesExtensions = config['acceptedFilesExtensions']
 
     # verbosity
-    verbose = False
-
-
+    verbose = config['verbose']
 
 
     ################################### DONT TOUCH ##################################

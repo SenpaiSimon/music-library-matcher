@@ -2,6 +2,7 @@ import os
 import musicbrainzngs as mb
 import pathlib
 import colorama
+import json
 from colorama import Fore, Back, Style
 
 import src.globalVars as gv
@@ -70,5 +71,20 @@ def main():
 
 
 if __name__ == "__main__":
+    if(not os.path.exists("config.json")):
+        defaultConfig  = {
+            "outputPath": "./output",
+            "inputDir": "./input",
+            "skippedFilesDir": "./output/skipped",
+            "acceptedFilesExtensions": [".mp3", ".wav", ".m4a"],
+            "replaceList" : [(".",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
+            "verbose": False
+        }
+        
+        with open("config.json", "w") as file:
+            json.dump(defaultConfig, file, indent=4)
+        print("config.json created. Please edit paths and run again.")
+        exit(0)
+        
     gv.init()
     main()
