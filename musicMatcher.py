@@ -1,4 +1,5 @@
 import os
+import shutil
 import musicbrainzngs as mb
 import pathlib
 import colorama
@@ -16,7 +17,7 @@ def main():
 
     # Remove temp if program failed last time
     if os.path.exists(gv.tempPath):
-        os.remove(gv.tempPath)
+        shutil.rmtree(gv.tempPath)
     
     # first get total number of files
     totalFileCount = 0
