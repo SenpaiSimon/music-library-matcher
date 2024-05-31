@@ -319,12 +319,12 @@ def fillMetadata(path):
             filename = path.name
             tempPathDupl = os.path.join(gv.duplicatedFilesDir)
             skippedPathDupl = os.path.join(tempPathDupl, filename)
-            orgPath = os.path.join(path, filename)
-            shutil.move(orgPath, skippedPathDupl)
+            # orgPath = os.path.join(path, filename)
+            shutil.move(path, skippedPathDupl)
             if gv.verbose:
                 print("==\t- {} DUPLICATED {} - moving file to {}".format(Fore.RED, Fore.RESET, skippedPathDupl), end="")
         
-        if gv.verbose:   
+        if gv.verbose:
             print("- {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         else:
             print("\33[2K\r== {} -> {} ERROR skipped {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
