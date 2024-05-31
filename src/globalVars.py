@@ -28,6 +28,9 @@ def init():
     # skipped and error files get moved here
     skippedFilesDir = config['skippedFilesDir']
 
+    # duplicated files get moved here (due to already existing)
+    duplicatedFilesDir = config['duplicatedFilesDir']
+
     # replace 1 with 2 ("1", "2")
     replaceList = config['replaceList']
 

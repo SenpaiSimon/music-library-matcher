@@ -13,6 +13,10 @@ from src.mbInterface import fillMetadata
 def main():
     colorama.init()
     mb.set_useragent("MB-Application", version="2.7.3")
+
+    # Remove temp if program failed last time
+    if os.path.exists(gv.tempPath):
+        os.remove(gv.tempPath)
     
     # first get total number of files
     totalFileCount = 0

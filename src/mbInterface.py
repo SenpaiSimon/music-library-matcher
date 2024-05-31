@@ -169,8 +169,12 @@ def _scrapeSong(path):
         print("==\t- Calling Shazam API", end="")
     else:
         print(" - Calling Shazam API", end="")
-        
-    data = _call_shazam(path)
+    
+    try:
+        data = _call_shazam(path)
+    except:
+        data = Status.ERR
+    
     if(data == Status.ERR):
         if gv.verbose:
             print(" - {}failed{}".format(Fore.RED, Style.RESET_ALL))
@@ -270,7 +274,7 @@ def _addMetadata(data, path):
         finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix)
         finalPath = os.path.join(outPath, finalFileName)
         # move the file
-        shutil.move(path, finalPath)
+        shutil.move(path, finalPath)        # TODO overwritting, better moving to duplicate and numbering it with (1)
         if gv.verbose:
             print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
             print("==\t-> {}New Filename{} is: {}".format(Fore.CYAN, Style.RESET_ALL, finalFileName))
@@ -289,7 +293,7 @@ def _addMetadata(data, path):
         if gv.verbose:
             print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         else:
-            print("\33[2K\r== {} -> missing fields - moving to {}".format(gv.lastStatusPrint, skippedPath), end="")
+            print("\33[2K\r== {} -> {} MISSING FIELDS {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
         
 def fillMetadata(path):
     data = _scrapeSong(path)
@@ -305,19 +309,24 @@ def fillMetadata(path):
         skippedPath = os.path.join(gv.skippedFilesDir)
         os.makedirs(skippedPath, exist_ok=True)
         
-        if gv.verbose:
-            print("==\t- Moving file to {}".format(skippedPath), end="")
+        
         try:
             shutil.move(path, skippedPath)
+            if gv.verbose:
+                print("==\t- Moving file to {}".format(skippedPath), end="")
         except:
-            # file already exists --> overwrite it please
+            # file already exists --> move to duplicate
             filename = path.name
-            skippedPathNew = os.path.join(skippedPath, filename)
-            shutil.move(path, skippedPathNew)
+            tempPathDupl = os.path.join(gv.duplicatedFilesDir)
+            skippedPathDupl = os.path.join(tempPathDupl, filename)
+            orgPath = os.path.join(path, filename)
+            shutil.move(orgPath, skippedPathDupl)
+            if gv.verbose:
+                print("==\t- {} DUPLICATED {} - moving file to {}".format(Fore.RED, Fore.RESET, skippedPathDupl), end="")
         
         if gv.verbose:   
             print("- {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         else:
-            print("\33[2K\r== {} -> err skipped - moving to {}".format(gv.lastStatusPrint, skippedPath), end="")
+            print("\33[2K\r== {} -> {} ERROR skipped {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
         return Status.ERR
     _addMetadata(data, path)
