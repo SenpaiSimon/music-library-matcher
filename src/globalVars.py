@@ -5,6 +5,7 @@ def init():
     global outputPath
     global inputDir
     global skippedFilesDir
+    global duplicatedFilesDir
     global replaceList
     global acceptedFilesExtensions
     global verbose
