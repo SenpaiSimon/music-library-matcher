@@ -81,11 +81,14 @@ if __name__ == "__main__":
             "outputPath": "./output",
             "inputDir": "./input",
             "skippedFilesDir": "./output/skipped",
-            "acceptedFilesExtensions": [".mp3", ".wav", ".m4a"],
-            "replaceList" : [(".",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
+            "duplicatedFilesDir": "./output/duplicated",
+            "acceptedFilesExtensions": [".mp3", ".m4a"],
+            "replaceList" : [(".",""),("'",""),("´",""),("`",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
             "verbose": False
         }
-        
+        # not working yet
+        # ".wav", 
+
         with open("config.json", "w") as file:
             json.dump(defaultConfig, file, indent=4)
         print("config.json created. Please edit paths and run again.")
