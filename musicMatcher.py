@@ -83,7 +83,7 @@ if __name__ == "__main__":
             "skippedFilesDir": "./output/skipped",
             "duplicatedFilesDir": "./output/duplicated",
             "acceptedFilesExtensions": [".mp3", ".m4a"],
-            "replaceList" : [(".",""),("'",""),("´",""),("`",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
+            "replaceList" : [(".",""),("\'",""),("´",""),("`",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
             "verbose": False
         }
         # not working yet
