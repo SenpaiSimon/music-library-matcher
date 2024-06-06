@@ -7,6 +7,7 @@ import src.globalVars as gv
 def sanitizeName(inString):
     for entry in gv.replaceList:
         inString = inString.replace(entry[0], entry[1])
+        inString = inString.rstrip(" ")     # get rid of last space, if exist
     
     return inString
 
