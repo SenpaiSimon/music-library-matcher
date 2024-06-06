@@ -6,8 +6,10 @@ def init():
     global inputDir
     global skippedFilesDir
     global duplicatedFilesDir
+    global dataformatFilesDir
     global replaceList
     global acceptedFilesExtensions
+    global unsupportedFilesExtensions
     global verbose
     global skippedFiles
     global lastStatusPrint
@@ -32,12 +34,17 @@ def init():
     # duplicated files get moved here (due to already existing)
     duplicatedFilesDir = config['duplicatedFilesDir']
 
+    # wrong dataformats get moved here
+    dataformatFilesDir = config['dataformatFilesDir']
+
     # replace 1 with 2 ("1", "2")
     replaceList = config['replaceList']
 
     # files types ##################################
-    # ".flac", not working at the moment
     acceptedFilesExtensions = config['acceptedFilesExtensions']
+
+    # files types to be done
+    unsupportedFilesExtensions = config['unsupportedFilesExtensions']
 
     # verbosity
     verbose = config['verbose']

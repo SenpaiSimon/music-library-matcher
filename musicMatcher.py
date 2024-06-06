@@ -61,6 +61,28 @@ def main():
                     print("")
                                
                 curFileIndex += 1
+            elif (curPath.suffix in gv.unsupportedFilesExtensions):
+                gv.lastStatusPrint = "{} of {} - File: {}".format(Fore.CYAN + str(curFileIndex) + Style.RESET_ALL, Fore.GREEN + str(totalFileCount) + Style.RESET_ALL, curPath.name)
+
+                extensionFolder = curPath.suffix.replace(".","")
+                extensionPath = os.path.join(gv.dataformatFilesDir, extensionFolder)
+                # Check if flac path exists
+                if not (os.path.exists(extensionPath)):
+                    os.mkdir(extensionPath)
+                
+                # Create new path and move it
+                finalextensionPath = os.path.join(extensionPath, filename)
+                shutil.move(curPath, finalextensionPath)
+                    
+                if gv.verbose:
+                    print(" - {}FILE FORMAT{}".format(Fore.RED, Style.RESET_ALL))
+                    print("==\t-> {}Moving to folder{}: {}".format(Fore.CYAN, Style.RESET_ALL, extensionFolder))
+                else: 
+                    print("== {} -> {}Moving to folder{}: {}".format(gv.lastStatusPrint, Fore.CYAN, Style.RESET_ALL, extensionFolder))
+                
+                curFileIndex += 1
+
+
     
     if not gv.verbose:
         print("==")
@@ -82,7 +104,9 @@ if __name__ == "__main__":
             "inputDir": "./input",
             "skippedFilesDir": "./output/skipped",
             "duplicatedFilesDir": "./output/duplicated",
+            "dataformatFilesDir": "./output/dataformat",
             "acceptedFilesExtensions": [".mp3", ".m4a"],
+            "unsupportedFilesExtensions": [".wav", ".wave", "flac"],
             "replaceList" : [(".",""),("\'",""),("´",""),("`",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
             "verbose": False
         }
