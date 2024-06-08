@@ -273,13 +273,20 @@ def _addMetadata(data, path):
         os.makedirs(outPath, exist_ok=True)
         finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix)
         finalPath = os.path.join(outPath, finalFileName)
+
         # move the file
-        shutil.move(path, finalPath)        # TODO overwritting, better moving to duplicate and numbering it with (1)
-        if gv.verbose:
-            print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
-            print("==\t-> {}New Filename{} is: {}".format(Fore.CYAN, Style.RESET_ALL, finalFileName))
-        else: 
-            print("\33[2K\r== {} -> New Filename: {}".format(gv.lastStatusPrint, finalFileName), end="")
+        if (len(finalPath) < 200):
+            shutil.move(path, finalPath)        # TODO overwritting, better moving to duplicate and numbering it with (1)
+            if gv.verbose:
+                print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
+                print("==\t-> {}New Filename{} is: {}".format(Fore.CYAN, Style.RESET_ALL, finalFileName))
+            else: 
+                print("\33[2K\r== {} -> New Filename: {}".format(gv.lastStatusPrint, finalFileName), end="")
+        else:
+            if gv.verbose:
+                print(" - {}MOVING FAILED{}: pathname to long".format(Fore.RED, Style.RESET_ALL))
+            else: 
+                print("\33[2K\r== {} -> {}MOVING FAILED{}: pathname to long {}".format(gv.lastStatusPrint, Fore.RED, Style.RESET_ALL, finalFileName), end="")
     else:
         if gv.verbose:
             print(" - {}Skipped{} - needed fields are missing".format(Fore.YELLOW, Style.RESET_ALL))
