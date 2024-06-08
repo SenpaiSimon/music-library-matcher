@@ -54,7 +54,10 @@ def main():
                     print("== {}".format(gv.lastStatusPrint), end="")
                     
                 #  scrape all the metadata for current file
-                fillMetadata(curPath)
+                try:
+                    fillMetadata(curPath)
+                except:
+                    pass
                 if gv.verbose:
                     print("==\n==")
                 else:
