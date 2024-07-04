@@ -1,7 +1,10 @@
 from enum import Enum
 
 class Status(Enum):
-    ERR = 1
+    ERROR = 1
     OK = 2
-    SKIP = 3
+    SKIPPED = 3
     MISSING = 4
+    LONGNAME = 5
+    DUPLICATE = 6
+    HTTP = 7

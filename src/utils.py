@@ -2,6 +2,8 @@ import colorama
 from colorama import Fore, Back, Style
 
 import src.globalVars as gv
+import os
+import shutil
 
 
 def sanitizeName(inString):
@@ -21,3 +23,17 @@ def printDataFormatted(data):
 
 def printColored(text, color, end):
     print("{}{}{}".format(color, text, Style.RESET_ALL), end=end)
+
+# Moving files from original path to a new destination path
+# Respecting errors
+def movingFiles(orgPath, destPath, error):
+    os.makedirs(destPath, exist_ok=True)
+    if (error.empty()):
+        tempPath = destPath
+        shutil.move(orgPath, tempPath)
+    else:
+        tempPath = os.path.join(destPath, error)
+        shutil.move(orgPath, tempPath)
+    
+    if gv.verbose:
+        print("==\t- {} {} {} - moving file to {}".format(Fore.RED, error, Fore.RESET, tempPath), end="")

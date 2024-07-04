@@ -5,8 +5,6 @@ def init():
     global outputPath
     global inputDir
     global skippedFilesDir
-    global duplicatedFilesDir
-    global dataformatFilesDir
     global replaceList
     global acceptedFilesExtensions
     global unsupportedFilesExtensions
@@ -30,12 +28,6 @@ def init():
 
     # skipped and error files get moved here
     skippedFilesDir = config['skippedFilesDir']
-
-    # duplicated files get moved here (due to already existing)
-    duplicatedFilesDir = config['duplicatedFilesDir']
-
-    # wrong dataformats get moved here
-    dataformatFilesDir = config['dataformatFilesDir']
 
     # replace 1 with 2 ("1", "2")
     replaceList = config['replaceList']

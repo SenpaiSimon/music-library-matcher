@@ -16,14 +16,14 @@ from .shazamInterface import _call_shazam
 
 def _get_metadata(data):
     # break instantly on ERR
-    if(data == Status.ERR):
-        return Status.ERR
+    if(data == Status.ERROR):
+        return Status.ERROR
     
     # break on missing needed information
     if(data.get('title') == Status.MISSING):
-        return Status.ERR
+        return Status.ERROR
     if(data.get('artist') == Status.MISSING):
-        return Status.ERR
+        return Status.ERROR
     
     if gv.verbose:
         print("\n", end="")
@@ -36,7 +36,7 @@ def _get_metadata(data):
     
     # break instantly on ERR
     if(artistID == Status.MISSING):
-        return Status.ERR
+        return Status.ERROR
         
     try:
         release = mb.search_releases(data.get('title'), arid=artistID).get('release-list', "NA")[0]
@@ -51,7 +51,7 @@ def _get_metadata(data):
         releaseID = release.get('id', Status.MISSING)
         # break instantly on ERR
         if(releaseID == Status.MISSING):
-            return Status.ERR
+            return Status.ERROR
         fallback = False
     else:
         fallback = True
@@ -65,16 +65,16 @@ def _get_metadata(data):
 
         recordingSearch = mb.search_recordings(data.get('title'), arid=artistID).get('recording-list', Status.MISSING)
         if(recordingSearch == Status.MISSING):
-            return Status.ERR
+            return Status.ERROR
         
         try:
             recordingID = recordingSearch[0].get('id', Status.MISSING)
         except IndexError:
-            return Status.ERR
+            return Status.ERROR
             
         recording = mb.get_recording_by_id(recordingID, includes=['releases', 'discids', 'artist-credits', 'tags', 'isrcs', 'label-rels']).get('recording', Status.MISSING)
         if(recording == Status.MISSING):
-            return Status.ERR
+            return Status.ERROR
         
         if gv.verbose:
             print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
@@ -90,7 +90,7 @@ def _get_metadata(data):
         songExtendedData = mb.get_release_by_id(releaseID, includes=['tags', 'artists', 'recordings', 'release-groups', 'labels', 'discids']).get('release', Status.MISSING)
         
         if(songExtendedData == Status.MISSING):
-            return Status.ERR
+            return Status.ERROR
         
         tagList = songExtendedData.get('release-group', {}).get('tag-list', Status.MISSING)
         if (tagList != Status.MISSING):
@@ -102,11 +102,11 @@ def _get_metadata(data):
             trackNum = songExtendedData.get('medium-list', "NA")[0].get('track-list', "NA")[0].get('position', Status.MISSING)
             
             if(trackNum == Status.MISSING):
-                return Status.ERR
+                return Status.ERROR
             else:
                 data['trackNumber'] = trackNum
         except IndexError:
-            return Status.ERR
+            return Status.ERROR
         
         for key, value in data.items():
             if(value == Status.MISSING):
@@ -130,11 +130,11 @@ def _get_metadata(data):
         try:
             trackNum = recording.get('release-list', "NA")[0].get('medium-list', "NA")[0].get('track-list', "NA")[0].get('position', Status.MISSING)
             if(trackNum == Status.MISSING):
-                return Status.ERR
+                return Status.ERROR
             else:
                 data['trackNumber'] = trackNum
         except IndexError:
-            return Status.ERR
+            return Status.ERROR
         
         for key, value in data.items():
             if(value == Status.MISSING):
@@ -173,12 +173,12 @@ def _scrapeSong(path):
     try:
         data = _call_shazam(path)
     except:
-        data = Status.ERR
+        data = Status.ERROR
     
-    if(data == Status.ERR):
+    if(data == Status.ERROR):
         if gv.verbose:
             print(" - {}failed{}".format(Fore.RED, Style.RESET_ALL))
-        return Status.ERR
+        return Status.ERROR
     
     if gv.verbose:
         print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
@@ -190,10 +190,10 @@ def _scrapeSong(path):
     else: 
         print("\33[2K\r== {} - Getting Metadata from Musicbrainz".format(gv.lastStatusPrint), end ="")
     data = _get_metadata(data)
-    if(data == Status.ERR):
+    if(data == Status.ERROR):
         if gv.verbose:
             print(" - {}failed{}".format(Fore.RED, Style.RESET_ALL))
-        return Status.ERR
+        return Status.ERROR
     
     return data
 
@@ -271,41 +271,45 @@ def _addMetadata(data, path):
         outPath = os.path.join(gv.outputPath, tempArtist, outPathAlbum)
         # and create it
         os.makedirs(outPath, exist_ok=True)
-        finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix)
+        finalFileName = "{} - {} - {}{}".format(data['trackNumber'], tempArtist, tempTitle,  path.suffix.lower())
         finalPath = os.path.join(outPath, finalFileName)
 
         # move the file
-        if (len(finalPath) < 200):
-            shutil.move(path, finalPath)        # TODO overwritting, better moving to duplicate and numbering it with (1)
+        if (len(finalPath) < 400):
+            shutil.move(path, finalPath)
             if gv.verbose:
                 print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
                 print("==\t-> {}New Filename{} is: {}".format(Fore.CYAN, Style.RESET_ALL, finalFileName))
             else: 
                 print("\33[2K\r== {} -> New Filename: {}".format(gv.lastStatusPrint, finalFileName), end="")
+            return Status.OK
         else:
             if gv.verbose:
                 print(" - {}MOVING FAILED{}: pathname to long".format(Fore.RED, Style.RESET_ALL))
             else: 
                 print("\33[2K\r== {} -> {}MOVING FAILED{}: pathname to long {}".format(gv.lastStatusPrint, Fore.RED, Style.RESET_ALL, finalFileName), end="")
+            return Status.LONGNAME
     else:
         if gv.verbose:
             print(" - {}Skipped{} - needed fields are missing".format(Fore.YELLOW, Style.RESET_ALL))
         
         gv.skippedFiles.append(path)
-        skippedPath = os.path.join(gv.skippedFilesDir)
-        if gv.verbose:
-            print("==\t\t- Moving file to {}".format(skippedPath), end="")
-        os.makedirs(skippedPath, exist_ok=True)
-        shutil.move(path, skippedPath)
-        if gv.verbose:
-            print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
-        else:
-            print("\33[2K\r== {} -> {} MISSING FIELDS {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
+        return Status.SKIPPED
+        # skippedPath = os.path.join(gv.skippedFilesDir, "missingData")
+        # if gv.verbose:
+        #     print("==\t\t- Moving file to {}".format(skippedPath), end="")
+        # os.makedirs(skippedPath, exist_ok=True)
+        # shutil.move(path, skippedPath)
+        # if gv.verbose:
+        #     print(" - {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
+        # else:
+        #     print("\33[2K\r== {} -> {} MISSING FIELDS {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
+        # #TODO move the move function to main
         
 def fillMetadata(path):
     data = _scrapeSong(path)
     
-    if(data == Status.ERR):
+    if(data == Status.ERROR):
         if gv.verbose:
             print("==\t- Error Scraping needed data", end='')
             print(" - {}Skipped{}".format(Fore.YELLOW, Style.RESET_ALL))
@@ -313,27 +317,18 @@ def fillMetadata(path):
             print("\33[2K\r== {} Error scraping needed data".format(gv.lastStatusPrint), end="")
         
         gv.skippedFiles.append(path)
-        skippedPath = os.path.join(gv.skippedFilesDir)
-        os.makedirs(skippedPath, exist_ok=True)
+        # skippedPath = os.path.join(gv.skippedFilesDir, "missingData")
+        # os.makedirs(skippedPath, exist_ok=True)
         
-        
-        try:
-            shutil.move(path, skippedPath)
-            if gv.verbose:
-                print("==\t- Moving file to {}".format(skippedPath), end="")
-        except:
-            # file already exists --> move to duplicate
-            filename = path.name
-            tempPathDupl = os.path.join(gv.duplicatedFilesDir)
-            skippedPathDupl = os.path.join(tempPathDupl, filename)
-            # orgPath = os.path.join(path, filename)
-            shutil.move(path, skippedPathDupl)
-            if gv.verbose:
-                print("==\t- {} DUPLICATED {} - moving file to {}".format(Fore.RED, Fore.RESET, skippedPathDupl), end="")
+        if gv.verbose:
+            print("==\t- Moving file to {}".format(Status.SKIPPED.name), end="")
         
         if gv.verbose:
             print("- {}DONE{}".format(Fore.GREEN, Style.RESET_ALL))
         else:
-            print("\33[2K\r== {} -> {} ERROR skipped {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, skippedPath), end="")
-        return Status.ERR
-    _addMetadata(data, path)
+            print("\33[2K\r== {} -> {} ERROR skipped {} - moving to {}".format(gv.lastStatusPrint, Fore.RED, Fore.RESET, Status.SKIPPED.name), end="")
+        return Status.SKIPPED
+        # return Status.ERROR
+    
+    status = _addMetadata(data, path)
+    return status

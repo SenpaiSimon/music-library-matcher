@@ -9,6 +9,7 @@ from colorama import Fore, Back, Style
 import src.globalVars as gv
 from src.utils import printColored
 from src.mbInterface import fillMetadata
+from src.types import *
     
     
 def main():
@@ -54,10 +55,18 @@ def main():
                     print("== {}".format(gv.lastStatusPrint), end="")
                     
                 #  scrape all the metadata for current file
-                try:
-                    fillMetadata(curPath)
-                except:
-                    pass
+                status = fillMetadata(curPath)
+
+                if(status != Status.OK):
+                    tempPath = os.path.join(gv.skippedFilesDir, status.name)
+                    if not (os.path.exists(tempPath)):
+                        os.mkdir(tempPath)
+                    finalTempPath = os.path.join(tempPath, filename)
+                    if not (os.path.exists(finalTempPath)):
+                        shutil.move(curPath, tempPath)
+                    else:
+                        tempPath = os.path.join(gv.skippedFilesDir, Status.DUPLICATE.name)
+                        shutil.move(curPath, tempPath)
                 if gv.verbose:
                     print("==\n==")
                 else:
@@ -68,7 +77,7 @@ def main():
                 gv.lastStatusPrint = "{} of {} - File: {}".format(Fore.CYAN + str(curFileIndex) + Style.RESET_ALL, Fore.GREEN + str(totalFileCount) + Style.RESET_ALL, curPath.name)
 
                 extensionFolder = curPath.suffix.replace(".","")
-                extensionPath = os.path.join(gv.dataformatFilesDir, extensionFolder)
+                extensionPath = os.path.join(gv.skippedFilesDir, "dataformat", extensionFolder)
                 # Check if flac path exists
                 if not (os.path.exists(extensionPath)):
                     os.mkdir(extensionPath)
@@ -106,15 +115,11 @@ if __name__ == "__main__":
             "outputPath": "./output",
             "inputDir": "./input",
             "skippedFilesDir": "./output/skipped",
-            "duplicatedFilesDir": "./output/duplicated",
-            "dataformatFilesDir": "./output/dataformat",
-            "acceptedFilesExtensions": [".mp3", ".m4a"],
-            "unsupportedFilesExtensions": [".wav", ".wave", "flac"],
+            "acceptedFilesExtensions": [".mp3", ".MP3", ".m4a", ".M4A"],
+            "unsupportedFilesExtensions": [".wav", ".wave", "flac", ".WAV", ".WAVE", "FLAC"],
             "replaceList" : [(".",""),("\'",""),("´",""),("`",""),("/", "_"),(":", "-"), ("?", ""), ("\"", "-"), ("*", "x"), ("<", ""), (">", ""), ("\\", "\\\\")],
             "verbose": False
         }
-        # not working yet
-        # ".wav", 
 
         with open("config.json", "w") as file:
             json.dump(defaultConfig, file, indent=4)
